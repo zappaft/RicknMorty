@@ -9,31 +9,39 @@ import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.json.Json
+
 
 internal class RickApiInfrastructure: RickApiService {
-    private val baseUrl = "https://rickandmortyapi.com/api"
-    private val 
+    private companion object {
+        const val baseUrl = "https://rickandmortyapi.com/api"
+        const val characterUrl = "${baseUrl}/character"
+        const val locationUrl = "${baseUrl}/location"
+        const val episodeUrl = "${baseUrl}/episode"
+    }
 
-    override suspend fun getCharacters(): RickApiListResponse<Character> {
+    override suspend fun getCharacters(url: String?): RickApiListResponse<Character> {
+        return url?.let{
+            makeRequest(url, Character.serializer())
+        }?: makeRequest(characterUrl, Character.serializer())
+    }
+
+    override suspend fun getLocations(): List<Location> {
+        val response: RickApiListResponse<Location> = makeRequest(locationUrl, Location.serializer())
+        return response.results
+    }
+
+    override suspend fun getEpisodes(): List<Episode> {
+        val response: RickApiListResponse<Episode> = makeRequest(episodeUrl, Episode.serializer())
+        return response.results
+    }
+
+    private suspend inline fun <reified T> makeRequest(url: String, serializer: KSerializer<T>): RickApiListResponse<T> {
         val client = HttpClient(CIO)
-        val response: HttpResponse = client.get("$baseUrl")
-        println(response)
+        val response: HttpResponse = client.get(url)
+        val parsedResponse: RickApiListResponse<T> = Json.decodeFromString(RickApiListResponse.serializer(serializer), response.readText())
         client.close()
-        TODO()
-    }
-
-    fun getCharacterById(id: Int) {
-        TODO()
-    }
-
-    override suspend fun getLocations(): RickApiListResponse<Location> {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun getEpisodes(): RickApiListResponse<Episode> {
-        TODO("Not yet implemented")
+        return parsedResponse
     }
 }

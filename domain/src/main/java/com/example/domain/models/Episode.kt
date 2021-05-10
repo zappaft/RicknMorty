@@ -1,5 +1,9 @@
 package com.example.domain.models
 
+import kotlinx.serialization.Serializable as KotlinSerializable
+import java.io.Serializable as JavaSerializable
+
+@KotlinSerializable
 data class Episode(
     val id: Int,
     val name: String,
@@ -8,4 +12,4 @@ data class Episode(
     val characters: List<String>,
     val url: String,
     val created: String
-)
+): JavaSerializable

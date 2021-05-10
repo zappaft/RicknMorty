@@ -6,9 +6,9 @@ import com.example.domain.models.Location
 import com.example.domain.models.RickApiListResponse
 
 interface RickApiService {
-    suspend fun getCharacters(): RickApiListResponse<Character>
+    suspend fun getCharacters(url: String? = null): RickApiListResponse<Character>
 
-    suspend fun getLocations(): RickApiListResponse<Location>
+    suspend fun getLocations(): List<Location>
 
-    suspend fun getEpisodes(): RickApiListResponse<Episode>
+    suspend fun getEpisodes(): List<Episode>
 }
